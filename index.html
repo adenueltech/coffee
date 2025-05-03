@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Haven - Artisanal Coffee Experience</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js and GSAP libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    
+    <!-- Inline CSS -->
+    <style>
+        /* Base Styles */
+        :root {
+            --primary-color: #b45309;
+            --primary-light: #d97706;
+            --primary-dark: #92400e;
+            --secondary-color: #78350f;
+            --text-light: #fffbeb;
+            --text-dark: #1c1917;
+            --bg-light: #fffbeb;
+            --bg-dark: #1c1917;
+            --bg-medium: #f5f5f4;
+            --transition: all 0.3s ease;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .coffee-cup {
+            width: 80px;
+            height: 80px;
+            border: 4px solid var(--primary-color);
+            border-radius: 0 0 10px 10px;
+            position: relative;
+            margin-bottom: 20px;
+            background-color: var(--bg-light);
+        }
+
+        .coffee-cup::before {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: 15px;
+            width: 20px;
+            height: 30px;
+            border: 4px solid var(--primary-color);
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .coffee {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background-color: var(--primary-color);
+            animation: fill 2s ease-in-out infinite;
+        }
+
+        @keyframes fill {
+            0% {
+                height: 0;
+            }
+            50% {
+                height: 60px;
+            }
+            100% {
+                height: 0;
+            }
+        }
+
+        .loader p {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        /* 3D Background Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.2;
+        }
+
+        /* Container */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            outline: none;
+            text-align: center;
+        }
+
+        .primary-btn {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .primary-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .menu-btn {
+            background-color: var(--primary-light);
+            color: var(--text-light);
+            width: 100%;
+            padding: 8px 16px;
+        }
+
+        .menu-btn:hover {
+            background-color: var(--primary-color);
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            background-color: rgba(120, 53, 15, 0.95);
+            padding: 10px 0;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-light);
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            margin-right: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-light);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .mobile-menu-btn span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: var(--text-light);
+            transition: var(--transition);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 70%;
+            height: 100vh;
+            background-color: var(--bg-dark);
+            padding: 80px 30px 30px;
+            transition: right 0.3s ease;
+            z-index: 99;
+        }
+
+        .mobile-menu-open .mobile-menu {
+            right: 0;
+        }
+
+        .mobile-menu ul {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .mobile-menu ul li a {
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+
+        .mobile-menu-open .mobile-menu-btn span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .mobile-menu-open .mobile-menu-btn span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-open .mobile-menu-btn span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: linear-gradient(to bottom, rgba(120, 53, 15, 0.8), rgba(28, 25, 23, 0.9));
+            color: var(--text-light);
+            overflow: hidden;
+            padding: 80px 0;
+        }
+
+        .hero .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .hero-content h1 span {
+            color: var(--primary-light);
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .hero-3d-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        #coffee-cup-3d {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #coffee-cup-3d canvas {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-indicator i {
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0) translateX(-50%);
+            }
+            40% {
+                transform: translateY(-20px) translateX(-50%);
+            }
+            60% {
+                transform: translateY(-10px) translateX(-50%);
+            }
+        }
+
+        /* About Section */
+        .about {
+            padding: 100px 0;
+            background-color: var(--bg-medium);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: var(--secondary-color);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .section-title.light {
+            color: var(--text-light);
+        }
+
+        .section-title.light::after {
+            background-color: var(--primary-light);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            max-width: 700px;
+            margin: -30px auto 50px;
+        }
+
+        .section-subtitle.light {
+            color: var(--text-light);
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-bottom: 60px;
+        }
+
+        .about-image {
+            position: relative;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            height: 400px;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(180, 83, 9, 0.3), transparent);
+            z-index: 1;
+        }
+
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .about-image:hover img {
+            transform: scale(1.05);
+        }
+
+        .about-text h3 {
+            color: var(--primary-dark);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .feature-card {
+            background-color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-card i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+
+        /* Coffee pouring animation */
+        .coffee-pouring {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .coffee-pot {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 150px;
+            background-color: #3c2415;
+            border-radius: 10px 10px 60px 60px;
+            overflow: hidden;
+            animation: tiltPot 3s infinite;
+        }
+
+        .coffee-pot::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -30px;
+            width: 40px;
+            height: 80px;
+            background-color: #3c2415;
+            border-radius: 0 20px 20px 0;
+        }
+
+        .coffee-pot::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background-color: #2a1a0f;
+            border-radius: 0 0 60px 60px;
+        }
+
+        .coffee-stream {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 100px;
+            background-color: #3c2415;
+            border-radius: 5px;
+            transform-origin: top center;
+            animation: pourCoffee 3s infinite;
+        }
+
+        .coffee-cup-receiving {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 60px;
+            background-color: #f5f5f5;
+            border-radius: 0 0 40px 40px;
+            overflow: hidden;
+        }
+
+        .coffee-cup-receiving:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -20px;
+            width: 30px;
+            height: 30px;
+            background-color: #f5f5f5;
+            border-radius: 0 15px 15px 0;
+        }
+
+        .coffee-level {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background-color: #3c2415;
+            animation: fillCup 3s infinite;
+        }
+
+        @keyframes tiltPot {
+            0%, 100% { transform: translateX(-50%) rotate(0deg); }
+            25%, 75% { transform: translateX(-50%) rotate(15deg); }
+            50% { transform: translateX(-50%) rotate(20deg); }
+        }
+
+        @keyframes pourCoffee {
+            0%, 100% { height: 0; opacity: 0; }
+            25%, 75% { height: 100px; opacity: 1; transform: rotate(15deg); }
+            50% { height: 120px; opacity: 1; transform: rotate(20deg); }
+        }
+
+        @keyframes fillCup {
+            0% { height: 0; }
+            50%, 100% { height: 40px; }
+        }
+
+        /* Menu Section */
+        .menu {
+            padding: 100px 0;
+            background-color: var(--secondary-color);
+            color: var(--text-light);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .menu-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-item-image {
+            height: 200px;
+            overflow: hidden;
+            background-color: #3c2415;
+        }
+
+        .menu-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .menu-item:hover .menu-item-image img {
+            transform: scale(1.1);
+        }
+
+        .menu-item-content {
+            padding: 20px;
+        }
+
+        .menu-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .menu-item-header h3 {
+            margin-bottom: 0;
+            font-size: 1.3rem;
+        }
+
+        .price {
+            font-weight: 700;
+            color: var(--primary-light);
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 100px 0;
+            background-color: var(--bg-light);
+        }
+
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+
+        .contact-info h3,
+        .contact-form h3 {
+            font-size: 1.8rem;
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            display: flex;
+            margin-bottom: 25px;
+        }
+
+        .info-item i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-right: 20px;
+            margin-top: 5px;
+        }
+
+        .info-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 70px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .footer-logo i {
+            font-size: 1.5rem;
+            margin-right: 10px;
+            color: var(--primary-light);
+        }
+
+        .footer-logo span {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .footer-about p {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .footer-links h3,
+        .footer-hours h3,
+        .footer-connect h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .footer-links h3::after,
+        .footer-hours h3::after,
+        .footer-connect h3::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--primary-light);
+        }
+
+        .footer-links ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links ul li a:hover {
+            color: var(--primary-light);
+            padding-left: 5px;
+        }
+
+        .footer-hours ul li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .social-icons a:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .newsletter h4 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .newsletter-form {
+            display: flex;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            font-family: inherit;
+        }
+
+        .newsletter-form .btn {
+            border-radius: 0 4px 4px 0;
+            padding: 10px 15px;
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .newsletter-form .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Animation Classes */
+        .animate-text {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .reveal-element {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .reveal-element.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            html {
+                font-size: 15px;
+            }
+            
+            .hero-content h1 {
+                font-size: 2.8rem;
+            }
+            
+            .about-content,
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .about-image {
+                height: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: flex;
+            }
+            
+            .hero .container {
+                grid-template-columns: 1fr;
+                text-align: center;
+                padding-top: 80px; /* Add padding-top to prevent overlap with header */
+            }
+            
+            .hero-content {
+                margin: 0 auto;
+            }
+            
+            .hero-3d-container {
+                height: 300px;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .menu-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-content h1 {
+                font-size: 2.2rem;
+            }
+            
+            .features,
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-3d-container {
+                height: 250px;
+            }
+            
+            .coffee-pot {
+                width: 100px;
+                height: 130px;
+            }
+            
+            .coffee-cup-receiving {
+                width: 70px;
+                height: 50px;
+            }
+            
+            .form-group input,
+            .form-group textarea {
+                padding: 10px;
+            }
+            
+            .info-item {
+                flex-direction: column;
+            }
+            
+            .info-item i {
+                margin-bottom: 10px;
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 430px) {
+            html {
+                font-size: 14px;
+            }
+            
+            .hero-content h1 {
+                font-size: 1.8rem;
+            }
+            
+            .hero-content p {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+            }
+            
+            .hero-3d-container {
+                height: 200px;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .feature-card {
+                padding: 20px;
+            }
+            
+            .footer-hours ul li {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader">
+        <div class="coffee-cup">
+            <div class="coffee"></div>
+        </div>
+        <p>Brewing...</p>
+    </div>
+
+    <!-- 3D Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="fa-solid fa-mug-hot"></i>
+                <h1>Coffee Haven</h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#home" class="active">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#menu">Menu</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+                <div class="mobile-menu-btn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="animate-text">Experience Coffee <span>Perfection</span></h1>
+                <p class="animate-text delay-1">Artisanal brews crafted with passion and precision</p>
+                <button class="btn primary-btn animate-text delay-2">Order Now</button>
+            </div>
+            <div class="hero-3d-container">
+                <!-- 3D coffee cup will be rendered here by Three.js -->
+                <div id="coffee-cup-3d"></div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <a href="#about">
+                <i class="fa-solid fa-arrow-down"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">Our Coffee Story</h2>
+            <div class="about-content">
+                <div class="about-image reveal-element">
+                    <div class="image-overlay"></div>
+                    <!-- Coffee pouring animation instead of placeholder image -->
+                    <div class="coffee-pouring">
+                        <div class="coffee-pot"></div>
+                        <div class="coffee-stream"></div>
+                        <div class="coffee-cup-receiving">
+                            <div class="coffee-level"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-text reveal-element">
+                    <h3>Passion in Every Cup</h3>
+                    <p>Founded in 2010, Coffee Haven began with a simple mission: to serve exceptional coffee in a warm, welcoming environment. Our journey started with a small cart and a big dream, evolving into the beloved coffee destination you see today.</p>
+                    <p>We source our beans ethically from sustainable farms around the world, ensuring that every cup tells a story of quality and care.</p>
+                </div>
+            </div>
+            <div class="features">
+                <div class="feature-card reveal-element">
+                    <i class="fa-solid fa-mug-saucer"></i>
+                    <h3>Premium Beans</h3>
+                    <p>Sourced from the finest farms globally</p>
+                </div>
+                <div class="feature-card reveal-element">
+                    <i class="fa-solid fa-award"></i>
+                    <h3>Award Winning</h3>
+                    <p>Recognized for exceptional quality</p>
+                </div>
+                <div class="feature-card reveal-element">
+                    <i class="fa-solid fa-users"></i>
+                    <h3>Community Focus</h3>
+                    <p>Building connections through coffee</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section id="menu" class="menu">
+        <div class="container">
+            <h2 class="section-title light">Our Signature Menu</h2>
+            <p class="section-subtitle light">Discover our carefully crafted selection of coffee beverages, made with love and expertise</p>
+            
+            <div class="menu-grid">
+                <div class="menu-item reveal-element">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=200&q=80" alt="Espresso">
+                    </div>
+                    <div class="menu-item-content">
+                        <div class="menu-item-header">
+                            <h3>Espresso</h3>
+                            <span class="price">$3.50</span>
+                        </div>
+                        <p>Pure and intense coffee experience</p>
+                        <button class="btn menu-btn">Add to Order</button>
+                    </div>
+                </div>
+                
+                <div class="menu-item reveal-element">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1534778101976-62847782c213?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=200&q=80" alt="Cappuccino">
+                    </div>
+                    <div class="menu-item-content">
+                        <div class="menu-item-header">
+                            <h3>Cappuccino</h3>
+                            <span class="price">$4.50</span>
+                        </div>
+                        <p>Perfect balance of espresso, steamed milk, and foam</p>
+                        <button class="btn menu-btn">Add to Order</button>
+                    </div>
+                </div>
+                
+                <div class="menu-item reveal-element">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=200&q=80" alt="Latte">
+                    </div>
+                    <div class="menu-item-content">
+                        <div class="menu-item-header">
+                            <h3>Latte</h3>
+                            <span class="price">$4.75</span>
+                        </div>
+                        <p>Smooth espresso with steamed milk and light foam</p>
+                        <button class="btn menu-btn">Add to Order</button>
+                    </div>
+                </div>
+                
+                <div class="menu-item reveal-element">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1579888944880-d98341245702?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=200&q=80" alt="Mocha">
+                    </div>
+                    <div class="menu-item-content">
+                        <div class="menu-item-header">
+                            <h3>Mocha</h3>
+                            <span class="price">$5.25</span>
+                        </div>
+                        <p>Espresso with chocolate and steamed milk</p>
+                        <button class="btn menu-btn">Add to Order</button>
+                    </div>
+                </div>
+                
+                <div class="menu-item reveal-element">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1517701604599-bb29b565090c?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=200&q=80" alt="Cold Brew">
+                    </div>
+                    <div class="menu-item-content">
+                        <div class="menu-item-header">
+                            <h3>Cold Brew</h3>
+                            <span class="price">$4.95</span>
+                        </div>
+                        <p>Slow-steeped for 24 hours for a smooth finish</p>
+                        <button class="btn menu-btn">Add to Order</button>
+                    </div>
+                </div>
+                
+                <div class="menu-item reveal-element">
+                    <div class="menu-item-image">
+                        <img src="https://images.unsplash.com/photo-1556742393-d75f468bfcb0?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=200&q=80" alt="Pour Over">
+                    </div>
+                    <div class="menu-item-content">
+                        <div class="menu-item-header">
+                            <h3>Pour Over</h3>
+                            <span class="price">$5.50</span>
+                        </div>
+                        <p>Hand-poured for optimal flavor extraction</p>
+                        <button class="btn menu-btn">Add to Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <p class="section-subtitle">Have questions or feedback? We'd love to hear from you!</p>
+            
+            <div class="contact-container">
+                <div class="contact-info reveal-element">
+                    <h3>Contact Information</h3>
+                    <div class="info-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <div>
+                            <h4>Address</h4>
+                            <p>123 Coffee Street, Brewville, CA 94123</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-phone"></i>
+                        <div>
+                            <h4>Phone</h4>
+                            <p>(555) 123-4567</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>hello@coffeehaven.com</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-solid fa-clock"></i>
+                        <div>
+                            <h4>Hours</h4>
+                            <p>Mon-Fri: 7am-7pm | Sat-Sun: 8am-6pm</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form reveal-element">
+                    <h3>Send Us a Message</h3>
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn primary-btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">
+                        <i class="fa-solid fa-mug-hot"></i>
+                        <span>Coffee Haven</span>
+                    </div>
+                    <p>Crafting exceptional coffee experiences since 2010. Every cup tells a story.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#menu">Menu</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-hours">
+                    <h3>Opening Hours</h3>
+                    <ul>
+                        <li><span>Monday - Friday</span><span>7:00 AM - 7:00 PM</span></li>
+                        <li><span>Saturday</span><span>8:00 AM - 6:00 PM</span></li>
+                        <li><span>Sunday</span><span>8:00 AM - 6:00 PM</span></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-connect">
+                    <h3>Connect With Us</h3>
+                    <div class="social-icons">
+                        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    </div>
+                    <div class="newsletter">
+                        <h4>Subscribe to our newsletter</h4>
+                        <div class="newsletter-form">
+                            <input type="email" placeholder="Your email">
+                            <button class="btn">Subscribe</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; <span id="current-year"></span> Coffee Haven. developed by adenueltech.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Inline JavaScript -->
+    <script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current year in footer
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            
+            // Initialize loader
+            const loader = document.querySelector('.loader');
+            
+            // Hide loader after page loads
+            window.addEventListener('load', function() {
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    // Start animations after loader is hidden
+                    startAnimations();
+                }, 1500);
+            });
+            
+            // Mobile menu functionality
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const body = document.body;
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                body.classList.toggle('mobile-menu-open');
+            });
+            
+            // Handle navigation links for smooth scrolling
+            const allNavLinks = document.querySelectorAll('.nav-links a, .mobile-menu a, .scroll-indicator a, .footer-links a');
+            
+            allNavLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Close mobile menu if open
+                    body.classList.remove('mobile-menu-open');
+                    
+                    // Get the target section
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    
+                    if (targetSection) {
+                        // Smooth scroll to target
+                        targetSection.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                        
+                        // Update active class
+                        allNavLinks.forEach(navLink => {
+                            navLink.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked link and its counterparts
+                        document.querySelectorAll(`a[href="${targetId}"]`).forEach(sameLink => {
+                            sameLink.classList.add('active');
+                        });
+                    }
+                });
+            });
+            
+            // Header scroll effect
+            const header = document.querySelector('header');
+            
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+            
+            // Active nav link based on scroll position
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-links a');
+            
+            window.addEventListener('scroll', function() {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    
+                    if (window.scrollY >= (sectionTop - 200)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+            
+            // Scroll reveal animation
+            function revealElements() {
+                const elements = document.querySelectorAll('.reveal-element');
+                
+                elements.forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const windowHeight = window.innerHeight;
+                    
+                    if (elementTop < windowHeight - 100) {
+                        element.classList.add('active');
+                    }
+                });
+            }
+            
+            window.addEventListener('scroll', revealElements);
+            
+            // Contact form submission
+            const contactForm = document.getElementById('contact-form');
+            
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Get form values
+                    const name = document.getElementById('name').value;
+                    const email = document.getElementById('email').value;
+                    const message = document.getElementById('message').value;
+                    
+                    // In a real application, you would send this data to a server
+                    console.log('Form submitted:', { name, email, message });
+                    
+                    // Show success message
+                    alert('Thanks for your message! We\'ll get back to you soon.');
+                    
+                    // Reset form
+                    contactForm.reset();
+                });
+            }
+            
+            // Initialize 3D background and coffee cup if Three.js is available
+            if (typeof THREE !== 'undefined') {
+                initBackground();
+                initDetailedCoffeeCup();
+            } else {
+                console.warn('THREE.js not available. 3D elements will not be rendered.');
+                // Add a fallback image for the coffee cup
+                const coffeeCupContainer = document.getElementById('coffee-cup-3d');
+                if (coffeeCupContainer) {
+                    const fallbackImg = document.createElement('img');
+                    fallbackImg.src = 'https://images.unsplash.com/photo-1572286258217-215f6d8bb578?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&h=400&q=80';
+                    fallbackImg.alt = 'Coffee Cup';
+                    fallbackImg.style.width = '100%';
+                    fallbackImg.style.height = '100%';
+                    fallbackImg.style.objectFit = 'contain';
+                    coffeeCupContainer.appendChild(fallbackImg);
+                }
+            }
+            
+            // Start animations after page load
+            function startAnimations() {
+                // Reveal elements that are already in view
+                document.querySelectorAll('.reveal-element').forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const windowHeight = window.innerHeight;
+                    
+                    if (elementTop < windowHeight - 100) {
+                        element.classList.add('active');
+                    }
+                });
+            }
+            
+            // Initialize 3D background
+            function initBackground() {
+                try {
+                    const canvas = document.getElementById('bg-canvas');
+                    
+                    if (!canvas) return;
+
+                    // Create scene
+                    const scene = new THREE.Scene();
+                    
+                    // Create camera
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    camera.position.z = 5;
+                    
+                    // Create renderer
+                    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    
+                    // Create particles
+                    const particlesGeometry = new THREE.BufferGeometry();
+                    const particlesCount = 1000;
+                    
+                    const posArray = new Float32Array(particlesCount * 3);
+                    
+                    for (let i = 0; i < particlesCount * 3; i++) {
+                        posArray[i] = (Math.random() - 0.5) * 10;
+                    }
+                    
+                    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                    
+                    // Create material
+                    const particlesMaterial = new THREE.PointsMaterial({
+                        size: 0.02,
+                        color: 0xb45309
+                    });
+                    
+                    // Create mesh
+                    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+                    scene.add(particlesMesh);
+                    
+                    // Animation
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        
+                        particlesMesh.rotation.x += 0.0005;
+                        particlesMesh.rotation.y += 0.0005;
+                        
+                        renderer.render(scene, camera);
+                    }
+                    
+                    animate();
+                    
+                    // Handle resize
+                    window.addEventListener('resize', () => {
+                        // Update camera
+                        camera.aspect = window.innerWidth / window.innerHeight;
+                        camera.updateProjectionMatrix();
+                        
+                        // Update renderer
+                        renderer.setSize(window.innerWidth, window.innerHeight);
+                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    });
+                } catch (error) {
+                    console.error('Error initializing background:', error);
+                }
+            }
+            
+            // Initialize detailed 3D coffee cup
+            function initDetailedCoffeeCup() {
+                try {
+                    const container = document.getElementById('coffee-cup-3d');
+                    
+                    if (!container) return;
+                    
+                    // Create scene
+                    const scene = new THREE.Scene();
+                    
+                    // Create camera
+                    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+                    camera.position.set(0, 0, 7);
+                    
+                    // Create renderer with physically correct lighting
+                    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    renderer.physicallyCorrectLights = true;
+                    renderer.outputEncoding = THREE.sRGBEncoding;
+                    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                    renderer.toneMappingExposure = 1.5;
+                    renderer.shadowMap.enabled = true;
+                    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                    container.appendChild(renderer.domElement);
+                    
+                    // Add lights
+                    // Ambient light for overall illumination
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                    scene.add(ambientLight);
+                    
+                    // Main directional light (like sunlight)
+                    const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+                    mainLight.position.set(5, 5, 5);
+                    mainLight.castShadow = true;
+                    mainLight.shadow.mapSize.width = 1024;
+                    mainLight.shadow.mapSize.height = 1024;
+                    mainLight.shadow.camera.near = 0.5;
+                    mainLight.shadow.camera.far = 50;
+                    mainLight.shadow.bias = -0.0001;
+                    scene.add(mainLight);
+                    
+                    // Rim light to highlight edges
+                    const rimLight = new THREE.DirectionalLight(0xfff0dd, 0.7);
+                    rimLight.position.set(-5, 3, -5);
+                    scene.add(rimLight);
+                    
+                    // Fill light for softer shadows
+                    const fillLight = new THREE.PointLight(0xffeed6, 0.7);
+                    fillLight.position.set(-2, -2, 2);
+                    scene.add(fillLight);
+                    
+                    // Create a group to hold all coffee cup elements
+                    const cupGroup = new THREE.Group();
+                    scene.add(cupGroup);
+                    
+                    // Create saucer
+                    const saucerGeometry = new THREE.CylinderGeometry(2, 2.2, 0.1, 32);
+                    const saucerMaterial = new THREE.MeshStandardMaterial({
+                        color: 0xf5f5f5,
+                        metalness: 0.2,
+                        roughness: 0.3,
+                    });
+                    const saucer = new THREE.Mesh(saucerGeometry, saucerMaterial);
+                    saucer.position.y = -1.2;
+                    saucer.castShadow = true;
+                    saucer.receiveShadow = true;
+                    cupGroup.add(saucer);
+                    
+                    // Create saucer rim
+                    const saucerRimGeometry = new THREE.TorusGeometry(2, 0.1, 16, 32);
+                    const saucerRim = new THREE.Mesh(saucerRimGeometry, saucerMaterial);
+                    saucerRim.position.y = -1.15;
+                    saucerRim.rotation.x = Math.PI / 2;
+                    saucerRim.castShadow = true;
+                    saucerRim.receiveShadow = true;
+                    cupGroup.add(saucerRim);
+                    
+                    // Create cup outer shell
+                    const cupOuterGeometry = new THREE.CylinderGeometry(1.2, 1, 1.5, 32);
+                    const cupMaterial = new THREE.MeshStandardMaterial({
+                        color: 0xf5f5f5,
+                        metalness: 0.2,
+                        roughness: 0.3,
+                    });
+                    const cupOuter = new THREE.Mesh(cupOuterGeometry, cupMaterial);
+                    cupOuter.position.y = 0;
+                    cupOuter.castShadow = true;
+                    cupOuter.receiveShadow = true;
+                    cupGroup.add(cupOuter);
+                    
+                    // Create cup inner shell (for thickness)
+                    const cupInnerGeometry = new THREE.CylinderGeometry(1.1, 0.9, 1.5, 32);
+                    const cupInner = new THREE.Mesh(cupInnerGeometry, cupMaterial);
+                    cupInner.position.y = 0.05;
+                    cupGroup.add(cupInner);
+                    
+                    // Create cup rim
+                    const cupRimGeometry = new THREE.TorusGeometry(1.2, 0.08, 16, 32);
+                    const cupRim = new THREE.Mesh(cupRimGeometry, cupMaterial);
+                    cupRim.position.y = 0.75;
+                    cupRim.rotation.x = Math.PI / 2;
+                    cupRim.castShadow = true;
+                    cupGroup.add(cupRim);
+                    
+                    // Create cup bottom rim
+                    const cupBottomRimGeometry = new THREE.TorusGeometry(1, 0.08, 16, 32);
+                    const cupBottomRim = new THREE.Mesh(cupBottomRimGeometry, cupMaterial);
+                    cupBottomRim.position.y = -0.75;
+                    cupBottomRim.rotation.x = Math.PI / 2;
+                    cupBottomRim.castShadow = true;
+                    cupGroup.add(cupBottomRim);
+                    
+                    // Create coffee liquid
+                    const coffeeGeometry = new THREE.CylinderGeometry(1.09, 0.89, 0.3, 32);
+                    const coffeeMaterial = new THREE.MeshStandardMaterial({
+                        color: 0x3c2415,
+                        metalness: 0.3,
+                        roughness: 0.2,
+                        emissive: 0x221408,
+                        emissiveIntensity: 0.2,
+                    });
+                    const coffee = new THREE.Mesh(coffeeGeometry, coffeeMaterial);
+                    coffee.position.y = 0.55;
+                    cupGroup.add(coffee);
+                    
+                    // Create coffee surface (slightly curved for realism)
+                    const coffeeSurfaceGeometry = new THREE.SphereGeometry(1.09, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.1);
+                    const coffeeSurface = new THREE.Mesh(coffeeSurfaceGeometry, coffeeMaterial);
+                    coffeeSurface.position.y = 0.7;
+                    coffeeSurface.rotation.x = Math.PI;
+                    cupGroup.add(coffeeSurface);
+                    
+                    // Create handle using a custom shape
+                    const handleShape = new THREE.Shape();
+                    handleShape.moveTo(0, 0);
+                    handleShape.absarc(0, 0, 0.6, 0, Math.PI / 2, false);
+                    handleShape.absarc(0.2, -0.6, 0.4, Math.PI / 2, Math.PI, false);
+                    handleShape.absarc(0, -1.2, 0.6, Math.PI, Math.PI * 3/2, false);
+                    
+                    const handleExtrudeSettings = {
+                        steps: 1,
+                        depth: 0.15,
+                        bevelEnabled: true,
+                        bevelThickness: 0.1,
+                        bevelSize: 0.1,
+                        bevelOffset: 0,
+                        bevelSegments: 5
+                    };
+                    
+                    const handleGeometry = new THREE.ExtrudeGeometry(handleShape, handleExtrudeSettings);
+                    const handle = new THREE.Mesh(handleGeometry, cupMaterial);
+                    handle.position.set(1.1, 0, 0);
+                    handle.rotation.y = Math.PI / 2;
+                    handle.castShadow = true;
+                    cupGroup.add(handle);
+                    
+                    // Create steam particles
+                    const steamGroup = new THREE.Group();
+                    cupGroup.add(steamGroup);
+                    
+                    // Create multiple steam particles
+                    for (let i = 0; i < 20; i++) {
+                        const steamGeometry = new THREE.SphereGeometry(0.05 + Math.random() * 0.1, 8, 8);
+                        const steamMaterial = new THREE.MeshBasicMaterial({
+                            color: 0xffffff,
+                            transparent: true,
+                            opacity: 0.4
+                        });
+                        const steamParticle = new THREE.Mesh(steamGeometry, steamMaterial);
+                        
+                        // Random position above coffee
+                        const angle = Math.random() * Math.PI * 2;
+                        const radius = Math.random() * 0.7;
+                        steamParticle.position.x = Math.cos(angle) * radius;
+                        steamParticle.position.z = Math.sin(angle) * radius;
+                        steamParticle.position.y = 0.8 + Math.random() * 0.5;
+                        
+                        // Store initial position and custom properties for animation
+                        steamParticle.userData = {
+                            initialY: steamParticle.position.y,
+                            speed: 0.003 + Math.random() * 0.005,
+                            amplitude: 0.1 + Math.random() * 0.2,
+                            frequency: 0.02 + Math.random() * 0.03,
+                            phase: Math.random() * Math.PI * 2
+                        };
+                        
+                        steamGroup.add(steamParticle);
+                    }
+                    
+                    // Position the entire cup group
+                    cupGroup.position.y = -0.5;
+                    
+                    // Mouse move effect
+                    let mouseX = 0;
+                    let mouseY = 0;
+                    
+                    document.addEventListener('mousemove', (event) => {
+                        mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                        mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+                    });
+                    
+                    // Animation
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        
+                        // Rotate based on mouse position (with damping for smoother movement)
+                        cupGroup.rotation.y += (mouseX * 0.5 - cupGroup.rotation.y) * 0.05;
+                        cupGroup.rotation.x += (mouseY * 0.3 - cupGroup.rotation.x) * 0.05;
+                        
+                        // Additional subtle rotation
+                        cupGroup.rotation.y += Math.sin(Date.now() * 0.001) * 0.001;
+                        
+                        // Animate steam particles
+                        steamGroup.children.forEach(particle => {
+                            const { initialY, speed, amplitude, frequency, phase } = particle.userData;
+                            
+                            // Move upward
+                            particle.position.y += speed;
+                            
+                            // Add some horizontal movement (wavy pattern)
+                            particle.position.x += Math.sin((Date.now() * frequency) + phase) * 0.003;
+                            particle.position.z += Math.cos((Date.now() * frequency) + phase) * 0.003;
+                            
+                            // Fade out as they rise
+                            particle.material.opacity = 0.4 * (1 - (particle.position.y - initialY) / 2);
+                            
+                            // Reset when they go too high or fade out
+                            if (particle.position.y > initialY + 2 || particle.material.opacity < 0.05) {
+                                particle.position.y = initialY;
+                                particle.material.opacity = 0.4;
+                                
+                                // Randomize position again
+                                const angle = Math.random() * Math.PI * 2;
+                                const radius = Math.random() * 0.7;
+                                particle.position.x = Math.cos(angle) * radius;
+                                particle.position.z = Math.sin(angle) * radius;
+                            }
+                        });
+                        
+                        // Subtle floating animation for the entire cup
+                        cupGroup.position.y = -0.5 + Math.sin(Date.now() * 0.001) * 0.05;
+                        
+                        renderer.render(scene, camera);
+                    }
+                    
+                    animate();
+                    
+                    // Handle resize
+                    window.addEventListener('resize', () => {
+                        // Update camera
+                        camera.aspect = container.clientWidth / container.clientHeight;
+                        camera.updateProjectionMatrix();
+                        
+                        // Update renderer
+                        renderer.setSize(container.clientWidth, container.clientHeight);
+                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    });
+                } catch (error) {
+                    console.error('Error initializing coffee cup:', error);
+                    
+                    // Add a fallback image for the coffee cup
+                    const fallbackImg = document.createElement('img');
+                    fallbackImg.src = 'https://images.unsplash.com/photo-1572286258217-215f6d8bb578?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&h=400&q=80';
+                    fallbackImg.alt = 'Coffee Cup';
+                    fallbackImg.style.width = '100%';
+                    fallbackImg.style.height = '100%';
+                    fallbackImg.style.objectFit = 'contain';
+                    container.appendChild(fallbackImg);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
