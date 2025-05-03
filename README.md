@@ -12,7 +12,7 @@ demonstrating front-end development skills and responsive design principles.
 
 ## 🔥 Live Demo
 
-[View Live Demo](https://your-demo-link-here.com) (Replace with your actual deployment link)
+[View Live Demo](https://coffee-wheat-omega.vercel.app/) 
 
 ## ✨ Features
 
